@@ -1,14 +1,17 @@
 {
   "en": {
     "NOT_FOUND": "File not found",
-    "DOWNLOAD_ERROR": "Error while downloading file"
+    "DOWNLOAD_ERROR": "Error while downloading file",
+    "EXPIRED": "Link expired"
   },
   "ro": {
     "NOT_FOUND": "Fișierul nu a fost găsit",
-    "DOWNLOAD_ERROR": "Eroare la descărcarea fișierului"
+    "DOWNLOAD_ERROR": "Eroare la descărcarea fișierului",
+    "EXPIRED": "Linkul a expirat"
   },
   "ru": {
     "NOT_FOUND": "Файл не найден",
-    "DOWNLOAD_ERROR": "Ошибка при загрузке файла"
+    "DOWNLOAD_ERROR": "Ошибка при загрузке файла",
+    "EXPIRED": "Ссылка устарела"
   }
 }

@@ -49,6 +49,12 @@ app.get('/file/:uuid', (req, res) => {
 
     try {
       const file = JSON.parse(fs.readFileSync(generateFilePath(req.params.uuid)), 'utf8');
+
+      if (file.expiresAt && file.expiresAt < new Date().getTime()) {
+        res.set('Content-Type', 'text/html').status(404).send(generateReadableErrorMessage('EXPIRED'))
+        return;
+      }
+
       let options = {}
 
       if (file.auth === 'basic') {
