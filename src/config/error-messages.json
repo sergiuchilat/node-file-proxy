@@ -1,0 +1,14 @@
+{
+  "en": {
+    "NOT_FOUND": "File not found",
+    "DOWNLOAD_ERROR": "Error while downloading file"
+  },
+  "ro": {
+    "NOT_FOUND": "Fișierul nu a fost găsit",
+    "DOWNLOAD_ERROR": "Eroare la descărcarea fișierului"
+  },
+  "ru": {
+    "NOT_FOUND": "Файл не найден",
+    "DOWNLOAD_ERROR": "Ошибка при загрузке файла"
+  }
+}
