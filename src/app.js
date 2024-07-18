@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const https = require('https')
 const fs = require("node:fs");
-const {response} = require("express");
+
 require('dotenv').config()
 app.use(express.json())
 
@@ -80,7 +80,7 @@ app.get('/file/:uuid', (req, res) => {
           res.send(Buffer.concat(data))
         })
 
-      }).on('error', (e) => {
+      }).on('error', () => {
         res.set('Content-Type', 'text/html').status(400).send(generateReadableErrorMessage('DOWNLOAD_ERROR'))
       })
 
@@ -91,7 +91,7 @@ app.get('/file/:uuid', (req, res) => {
 )
 
 app.listen(process.env.SERVER_PORT, () => {
-  console.log('Server is running on port 8888')
+  console.log(`Server is running on port ${process.env.SERVER_PORT}`)
 })
 
 function generateFilePath(uuid) {
