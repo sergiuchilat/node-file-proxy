@@ -2,9 +2,19 @@ const express = require('express')
 const app = express()
 const https = require('https')
 const fs = require("node:fs");
+const rateLimit = require("express-rate-limit")
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1min
+  limit: process.env.THROTTLE_LIMIT, // Limit each IP to THROTTLE_LIMIT requests per `window`
+  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+});
+
 
 require('dotenv').config()
 app.use(express.json())
+app.use(limiter)
 
 const basicAuthCredentials = {
   username: process.env.BASIC_AUTH_USERNAME || '',
