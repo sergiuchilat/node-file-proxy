@@ -88,6 +88,7 @@ const basicAuthCredentials = {
  */
 app.post('/file', (req, res) => {
   try {
+
     if (!fs.existsSync(process.env.FILES_METADATA_DIR)) {
       fs.mkdirSync(process.env.FILES_METADATA_DIR);
     }
