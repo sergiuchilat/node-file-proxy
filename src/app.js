@@ -11,9 +11,17 @@ const limiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
 });
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerConfig = require('./docs/swagger-config.js');
 
 require('dotenv').config()
-app.use(express.json())
+
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerConfig),
+    express.json(),
+);
 app.use(limiter)
 
 const basicAuthCredentials = {
@@ -21,6 +29,63 @@ const basicAuthCredentials = {
   password: process.env.BASIC_AUTH_PASSWORD || ''
 }
 
+/**
+ * @swagger
+ * /file:
+ *   post:
+ *     summary: Upload a file by uuid.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              uuid:
+ *                type: string
+ *                description: The file UUID.
+ *                example: 61610a45-5b47-4303-b195-097d13617745
+ *              expiresIn:
+ *                type: integer
+ *                description: Expires in minutes.
+ *                example: 60
+ *              expiresAt:
+ *                required: false
+ *                type: string
+ *                format: date-time
+ *                description: Date of expiration ISO
+ *                example: 2024-07-22T10:16:54.003Z
+ *     responses:
+ *       200:
+ *         description: Success message.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: File uploaded
+ *                 file:
+ *                   type: object
+ *                   properties:
+ *                     uuid:
+ *                       type: string
+ *                     expiresIn:
+ *                       type: integer
+ *                     expiresAt:
+ *                       type: string
+ *       400:
+ *         description: Error message.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: CREATE_ERROR
+ */
 app.post('/file', (req, res) => {
   try {
 
@@ -46,6 +111,40 @@ app.post('/file', (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /file/{uuid}:
+ *   delete:
+ *     summary: Delete a file by uuid.
+ *     parameters:
+ *     - in: path
+ *       name: uuid
+ *       required: true
+ *       description: File UUID
+ *       schema:
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: Success message.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: DELETED
+ *       400:
+ *         description: Error message.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: DELETE_ERROR
+ */
 app.delete('/file/:uuid', (req, res) => {
   try {
     fs.unlinkSync(generateFilePath(req.params.uuid));
@@ -55,6 +154,41 @@ app.delete('/file/:uuid', (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /file/{uuid}:
+ *   get:
+ *     summary: Retrieve a file by uuid.
+ *     parameters:
+ *     - in: path
+ *       name: uuid
+ *       required: true
+ *       description: File UUID
+ *       schema:
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: File content.
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Error message.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html><body><h1>Error</h1><h2>Message</h2></body></html>"
+ *       404:
+ *         description: Not found or expired message.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html><body><h1>Error</h1><h2>Message</h2></body></html>"
+ */
 app.get('/file/:uuid', (req, res) => {
 
     try {
