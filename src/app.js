@@ -189,54 +189,56 @@ app.delete('/file/:uuid', (req, res) => {
  *               example: "<html><body><h1>Error</h1><h2>Message</h2></body></html>"
  */
 app.get('/file/:uuid', (req, res) => {
-  try {
-    const file = JSON.parse(fs.readFileSync(generateFilePath(req.params.uuid)), 'utf8');
 
-    if (file.expiresAt && file.expiresAt < new Date().getTime()) {
-      fs.unlinkSync(generateFilePath(req.params.uuid));
-      res.set('Content-Type', 'text/html').status(404).send(generateReadableErrorMessage('EXPIRED'))
-      return;
-    }
+      try {
+        const file = JSON.parse(fs.readFileSync(generateFilePath(req.params.uuid)), 'utf8');
 
-    let options = {}
-
-    if (file.auth === 'basic') {
-      options = {
-        headers: {
-          'Authorization': 'Basic ' + Buffer.from(basicAuthCredentials.username + ':' + basicAuthCredentials.password).toString('base64')
+        if (file.expiresAt && file.expiresAt < new Date().getTime()) {
+          fs.unlinkSync(generateFilePath(req.params.uuid));
+          res.set('Content-Type', 'text/html').status(404).send(generateReadableErrorMessage('EXPIRED'))
+          return;
         }
+
+        let options = {}
+
+        if (file.auth === 'basic') {
+          options = {
+            headers: {
+              'Authorization': 'Basic ' + Buffer.from(basicAuthCredentials.username + ':' + basicAuthCredentials.password).toString('base64')
+            }
+          }
+        }
+
+        let data = []
+        https.get(file.path, options, (response) => {
+
+          if (response.statusCode !== 200) {
+            res.set('Content-Type', 'text/html').status(404).send(generateReadableErrorMessage('NOT_FOUND'))
+            return
+          }
+
+          response.on('data', (chunk) => {
+            data.push(chunk)
+          })
+
+          response.on('end', () => {
+            res.set('Content-Type', file.contentType)
+
+            if (file.downloadName) {
+              res.set('Content-Disposition', `attachment; filename="${file.downloadName}"`)
+            }
+            res.send(Buffer.concat(data))
+          })
+
+        }).on('error', () => {
+          res.set('Content-Type', 'text/html').status(400).send(generateReadableErrorMessage('DOWNLOAD_ERROR'))
+        })
+
+      } catch (e) {
+        res.set('Content-Type', 'text/html').status(400).send(generateReadableErrorMessage('DOWNLOAD_ERROR'))
       }
     }
-
-    let data = []
-    https.get(file.path, options, (response) => {
-
-      if (response.statusCode !== 200) {
-        res.set('Content-Type', 'text/html').status(404).send(generateReadableErrorMessage('NOT_FOUND'))
-        return;
-      }
-
-      response.on('data', (chunk) => {
-        data.push(chunk)
-      })
-
-      response.on('end', () => {
-        res.set('Content-Type', file.contentType)
-
-        if (file.downloadName) {
-          res.set('Content-Disposition', `attachment; filename="${file.downloadName}"`)
-        }
-        res.send(Buffer.concat(data))
-      })
-
-    }).on('error', () => {
-      res.set('Content-Type', 'text/html').status(400).send(generateReadableErrorMessage('DOWNLOAD_ERROR'))
-    })
-
-  } catch (e) {
-    res.set('Content-Type', 'text/html').status(400).send(generateReadableErrorMessage('DOWNLOAD_ERROR'))
-  }
-})
+)
 
 app.listen(process.env.SERVER_PORT, () => {
   console.log(`Server is running on port ${process.env.SERVER_PORT}`)
